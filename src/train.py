@@ -113,11 +113,9 @@ class Trainer:
         accuracy = 100. * correct / total
         return avg_loss, accuracy
 
-    def train(self, train_loader, val_loader, epochs=150, lr=0.001, weight_decay=1e-4, 
-              use_class_weights=False, use_focal_loss=False, label_smoothing=0.0):
+    def train(self, train_loader, val_loader, epochs=150, lr=0.001, weight_decay=1e-4):
         """
-        Prosty training loop bez skomplikowanych technik
-
+        Train the model for binary classification using BCELoss.
         Args:
             train_loader (DataLoader): DataLoader for the training data
             val_loader (DataLoader): DataLoader for the validation data
@@ -126,7 +124,6 @@ class Trainer:
             weight_decay (float): Weight decay for the optimizer
             use_class_weights (bool): Whether to use class weights for imbalanced data
             use_focal_loss (bool): Whether to use focal loss instead of cross entropy
-            label_smoothing (float): Label smoothing factor
         Returns:
             history (dict): Dictionary containing training and validation loss and accuracy history 
         """

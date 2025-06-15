@@ -70,10 +70,11 @@ class DataPreprocessor:
             imputer = SimpleImputer(strategy='median')
             df[numeric_columns] = imputer.fit_transform(df[numeric_columns])
 
-        # Konwertuj na klasyfikację binarną: 0 = brak choroby, 1 = choroba (klasy 1-4)
+        # Convert categorical columns to numeric using label encoding
+        # To keep multiclass you should not do y_multiclass > 0 
         X = df.drop('num', axis=1)
         y_multiclass = df['num'].values.astype(int)
-        y = (y_multiclass > 0).astype(int)  # Konwersja na binarną: 0 -> 0, 1-4 -> 1
+        y = (y_multiclass > 0).astype(int) 
         
         logger.info(f"Converted to binary classification: {np.bincount(y)} samples per class")
 

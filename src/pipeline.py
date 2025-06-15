@@ -139,8 +139,6 @@ class HeartDiseasePipeline:
             lr=self.config['learning_rate'],
             weight_decay=self.config['weight_decay'],
             use_class_weights=self.config.get('use_class_weights', False),
-            use_focal_loss=self.config.get('use_focal_loss', False),
-            label_smoothing=self.config.get('label_smoothing', 0.0)
         )
         
         return history
@@ -238,7 +236,7 @@ def get_default_config() -> Dict[str, Any]:
     Get default configuration for the heart disease prediction pipeline.
      
     Returns:
-        Ultra simple configuration - prawie jak logistic regression
+        Dictionary with default configuration parameters
     """
     return {
         'batch_size': 64,               
@@ -249,7 +247,4 @@ def get_default_config() -> Dict[str, Any]:
         'weight_decay': 1e-3,               
         'test_size': 0.15,                 
         'val_size': 0.15,                   
-        'use_class_weights': False,            
-        'use_focal_loss': False,               
-        'label_smoothing': 0.0                 
     }
