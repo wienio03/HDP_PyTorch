@@ -111,9 +111,9 @@ class DataPreprocessor:
         y_test_tensor = torch.LongTensor(y_test)
         
         # Create datasets without augmentation
-        train_dataset = HeartDiseaseDataset(X_train_tensor, y_train_tensor, augment=False)
-        val_dataset = HeartDiseaseDataset(X_val_tensor, y_val_tensor, augment=False)
-        test_dataset = HeartDiseaseDataset(X_test_tensor, y_test_tensor, augment=False)
+        train_dataset = HeartDiseaseDataset(X_train_tensor, y_train_tensor)
+        val_dataset = HeartDiseaseDataset(X_val_tensor, y_val_tensor)
+        test_dataset = HeartDiseaseDataset(X_test_tensor, y_test_tensor)
 
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
