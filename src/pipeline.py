@@ -111,7 +111,7 @@ class HeartDiseasePipeline:
             input_dim=input_dim,
             hidden_dims=self.config['hidden_dims'],
             dropout_rate=self.config['dropout_rate'],
-            num_classes=1
+            num_classes=5
         )
         
         logger.info(msg=f"Model architecture:\n{self.model}")
@@ -242,8 +242,8 @@ def get_default_config() -> Dict[str, Any]:
         'batch_size': 64,               
         'learning_rate': 0.001,          
         'epochs': 300,                    
-        'hidden_dims': [64, 32, 16],      
-        'dropout_rate': 0.5,             
+        'hidden_dims': [128, 64, 32],      
+        'dropout_rate': 0.3,             
         'weight_decay': 1e-3,               
         'test_size': 0.15,                 
         'val_size': 0.15,                   

@@ -70,13 +70,11 @@ class DataPreprocessor:
             imputer = SimpleImputer(strategy='median')
             df[numeric_columns] = imputer.fit_transform(df[numeric_columns])
 
-        # Convert categorical columns to numeric using label encoding
-        # To keep multiclass you should not do y_multiclass > 0 
+        # Zachowaj oryginalne klasy wieloklasowe (0,1,2,3,4)
         X = df.drop('num', axis=1)
-        y_multiclass = df['num'].values.astype(int)
-        y = (y_multiclass > 0).astype(int) 
+        y = df['num'].values.astype(int)  # Klasy 0,1,2,3,4
         
-        logger.info(f"Converted to binary classification: {np.bincount(y)} samples per class")
+        logger.info(f"Multi-class distribution: {np.bincount(y)} samples per class")
 
         self.feature_names = X.columns.tolist()
 
@@ -111,9 +109,9 @@ class DataPreprocessor:
         y_test_tensor = torch.LongTensor(y_test)
         
         # Create datasets without augmentation
-        train_dataset = HeartDiseaseDataset(X_train_tensor, y_train_tensor, augment=False)
-        val_dataset = HeartDiseaseDataset(X_val_tensor, y_val_tensor, augment=False)
-        test_dataset = HeartDiseaseDataset(X_test_tensor, y_test_tensor, augment=False)
+        train_dataset = HeartDiseaseDataset(X_train_tensor, y_train_tensor)
+        val_dataset = HeartDiseaseDataset(X_val_tensor, y_val_tensor)
+        test_dataset = HeartDiseaseDataset(X_test_tensor, y_test_tensor)
 
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)

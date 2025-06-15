@@ -9,7 +9,7 @@ class HeartDiseaseNet(nn.Module):
     This model consists of multiple fully connected layers with batch normalization,
     ReLU activation, and dropout for regularization.  
     """
-    def __init__(self, input_dim, hidden_dims=[256, 128, 64], dropout_rate=0.5, num_classes=1):
+    def __init__(self, input_dim, hidden_dims=[256, 128, 64], dropout_rate=0.5, num_classes=5):
         super(HeartDiseaseNet, self).__init__()
 
         layers = []
@@ -37,7 +37,7 @@ class HeartDiseaseNet(nn.Module):
     def forward(self, x):
         x = self.feature_extractor(x)
         x = self.out(x)
-        return torch.sigmoid(x)
+        return x
 
 class EarlyStopping:
     """
