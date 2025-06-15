@@ -11,10 +11,9 @@ from src.logger import logger
 
 
 class HeartDiseaseDataset(Dataset):
-    def __init__(self, X, y, augment=False):
+    def __init__(self, X, y):
         self.X = X
         self.y = y
-        self.augment = False  # Wyłączamy augmentation całkowicie
     
     def __len__(self):
         return len(self.X)
@@ -71,9 +70,12 @@ class DataPreprocessor:
             imputer = SimpleImputer(strategy='median')
             df[numeric_columns] = imputer.fit_transform(df[numeric_columns])
 
-        # Zmiana: używamy kolumny 'num' dla klasyfikacji 0-4
+        # Konwertuj na klasyfikację binarną: 0 = brak choroby, 1 = choroba (klasy 1-4)
         X = df.drop('num', axis=1)
-        y = df['num'].values.astype(int)  # Upewnij się, że to są int (0,1,2,3,4)
+        y_multiclass = df['num'].values.astype(int)
+        y = (y_multiclass > 0).astype(int)  # Konwersja na binarną: 0 -> 0, 1-4 -> 1
+        
+        logger.info(f"Converted to binary classification: {np.bincount(y)} samples per class")
 
         self.feature_names = X.columns.tolist()
 
@@ -99,11 +101,11 @@ class DataPreprocessor:
         Returns:
             Tuple of DataLoaders for train, validation, and test sets
         """
-        # Convert to tensors - y_tensor jako LongTensor dla CrossEntropyLoss
+        # Convert to tensors
         X_train_tensor = torch.FloatTensor(X_train)
         X_val_tensor = torch.FloatTensor(X_val)
         X_test_tensor = torch.FloatTensor(X_test)
-        y_train_tensor = torch.LongTensor(y_train)  # LongTensor dla klasyfikacji wieloklasowej
+        y_train_tensor = torch.LongTensor(y_train) 
         y_val_tensor = torch.LongTensor(y_val)
         y_test_tensor = torch.LongTensor(y_test)
         

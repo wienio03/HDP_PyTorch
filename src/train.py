@@ -62,7 +62,7 @@ class Trainer:
         total = 0
 
         for batch_idx, (data, target) in enumerate(tqdm(train_loader, desc='Training')):
-            data, target = data.to(self.device), target.long().to(self.device) 
+            data, target = data.to(self.device), target.float().to(self.device).unsqueeze(1) 
 
             optimizer.zero_grad()
             output = self.model(data) 
@@ -74,7 +74,7 @@ class Trainer:
             optimizer.step()
 
             total_loss += loss.item()
-            predicted = torch.argmax(output, dim=1)  
+            predicted = (output > 0.5).float()
             total += target.size(0)
             correct += (predicted == target).sum().item()
         
@@ -100,12 +100,12 @@ class Trainer:
 
         with torch.no_grad():
             for data, target in tqdm(val_loader, desc='Validating'):
-                data, target = data.to(self.device), target.long().to(self.device)  
+                data, target = data.to(self.device), target.float().to(self.device).unsqueeze(1)  
                 output = self.model(data) 
                 loss = criterion(output, target)
 
                 total_loss += loss.item()
-                predicted = torch.argmax(output, dim=1)  
+                predicted = (output > 0.5).float()
                 total += target.size(0)
                 correct += (predicted == target).sum().item() 
     
@@ -114,7 +114,7 @@ class Trainer:
         return avg_loss, accuracy
 
     def train(self, train_loader, val_loader, epochs=150, lr=0.001, weight_decay=1e-4, 
-              use_class_weights=True, use_focal_loss=True, label_smoothing=0.1):
+              use_class_weights=False, use_focal_loss=False, label_smoothing=0.0):
         """
         Prosty training loop bez skomplikowanych technik
 
@@ -131,32 +131,18 @@ class Trainer:
             history (dict): Dictionary containing training and validation loss and accuracy history 
         """
         
-        # Obliczanie wag klas
-        if use_class_weights:
-            all_targets = []
-            for _, target in train_loader:
-                all_targets.extend(target.cpu().numpy())
-            class_weights = compute_class_weight('balanced', classes=np.arange(5), y=all_targets)
-            class_weights = torch.tensor(class_weights, dtype=torch.float).to(self.device)
-        else:
-            class_weights = None
-
-        if use_focal_loss:
-            criterion = FocalLoss(alpha=class_weights, gamma=3)
-            logger.info(f"Using FocalLoss with class weights")
-        else:
-            criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
-            logger.info(f"Using CrossEntropyLoss with class weights and label smoothing={label_smoothing}")
+        criterion = nn.BCELoss()
+        logger.info("Using BCELoss for binary classification")
 
         optimizer = optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Scheduler: ReduceLROnPlateau
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=8, min_lr=1e-6)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6)
 
         # EarlyStopping z większą cierpliwością
-        early_stopping = EarlyStopping(patience=20, min_delta=0.0005, restore_best_weights=True)  
+        early_stopping = EarlyStopping(patience=15, min_delta=0.001, restore_best_weights=True)  
 
-        logger.info(msg=f'Starting improved training for {epochs} epochs...')
+        logger.info(msg=f'Starting binary classification training for {epochs} epochs...')
 
         for epoch in range(epochs):
             train_loss, train_acc = self.train_epoch(train_loader, criterion, optimizer)

@@ -44,19 +44,19 @@ class Evaluator:
     
     def generate_report(self, predictions, probabilities, targets):
         """
-        Generates complete evaluation report for multi-class classification (0-4).
+        Generates complete evaluation report for binary classification (0-1).
 
         Args:
-            predictions (np.ndarray): Model predictions (0,1,2,3,4).
-            probabilities (np.ndarray): Predicted probabilities for all classes.
-            targets (np.ndarray): True labels (0,1,2,3,4).
+            predictions (np.ndarray): Model predictions (0,1).
+            probabilities (np.ndarray): Predicted probabilities.
+            targets (np.ndarray): True labels (0,1).
         Returns:
             dict: Evaluation report containing classification metrics and confusion matrix.
         """
-        logger.info(msg='==== EVALUATION REPORT (Multi-class 0-4) ====')
+        logger.info(msg='==== EVALUATION REPORT (Binary Classification) ====')
         
-        # Class names for better readability
-        class_names = ['No Disease (0)', 'Mild (1)', 'Moderate (2)', 'Severe (3)', 'Critical (4)']
+        # Class names for binary classification
+        class_names = ['No Disease (0)', 'Disease (1)']
         
         logger.info(msg='Classification Report:')
         logger.info(msg=classification_report(targets, predictions, target_names=class_names))
@@ -73,13 +73,13 @@ class Evaluator:
 
     def plot_results(self, history, predictions, probabilities, targets): 
         """
-        Plots training history and confusion matrix for multi-class classification.
+        Plots training history and confusion matrix for binary classification.
 
         Args:
             history (dict): Training history containing 'train_loss', 'val_loss', 'train_acc', 'val_acc'.
-            predictions (np.ndarray): Model predictions (0,1,2,3,4).
-            probabilities (np.ndarray): Predicted probabilities for all classes.
-            targets (np.ndarray): True labels (0,1,2,3,4).
+            predictions (np.ndarray): Model predictions (0,1).
+            probabilities (np.ndarray): Predicted probabilities.
+            targets (np.ndarray): True labels (0,1).
         Returns:
             None: Displays the plots.
         """ 
@@ -106,13 +106,13 @@ class Evaluator:
         unique, counts = np.unique(targets, return_counts=True)
         axes[1, 0].bar(unique, counts, color='skyblue', alpha=0.7)
         axes[1, 0].set_title('Class Distribution in Test Set')
-        axes[1, 0].set_xlabel('Heart Disease Severity (0-4)')
+        axes[1, 0].set_xlabel('Heart Disease (0=No, 1=Yes)')
         axes[1, 0].set_ylabel('Count')
         axes[1, 0].grid(True, alpha=0.3)
         
         # Confusion Matrix 
         cm = confusion_matrix(targets, predictions)
-        class_names = ['No Disease (0)', 'Mild (1)', 'Moderate (2)', 'Severe (3)', 'Critical (4)']
+        class_names = ['No Disease (0)', 'Disease (1)']
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[1, 1],
                    xticklabels=class_names, yticklabels=class_names) 
         axes[1, 1].set_title('Confusion Matrix') 

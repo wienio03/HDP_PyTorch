@@ -68,7 +68,7 @@ class HeartDiseasePipeline:
         # Preprocess data
         X, y = self.preprocessor.preprocess_data(df)
         
-        # Split data with detailed class distribution logging
+        # Split data
         X_temp, X_test, y_temp, y_test = train_test_split(
             X, y, 
             test_size=self.config['test_size'], 
@@ -86,26 +86,6 @@ class HeartDiseasePipeline:
         logger.info(msg=f"Train set: {X_train.shape[0]} samples")
         logger.info(msg=f"Validation set: {X_val.shape[0]} samples")
         logger.info(msg=f"Test set: {X_test.shape[0]} samples")
-        
-        # Log detailed class distribution
-        import numpy as np
-        from collections import Counter
-        
-        train_dist = Counter(y_train)
-        val_dist = Counter(y_val)
-        test_dist = Counter(y_test)
-        
-        logger.info(msg="=== CLASS DISTRIBUTION ANALYSIS ===")
-        logger.info(msg=f"Training set distribution: {dict(train_dist)}")
-        logger.info(msg=f"Validation set distribution: {dict(val_dist)}")
-        logger.info(msg=f"Test set distribution: {dict(test_dist)}")
-        
-        # Calculate percentages
-        for class_id in [0, 1, 2, 3, 4]:
-            train_pct = (train_dist[class_id] / len(y_train)) * 100 if class_id in train_dist else 0
-            val_pct = (val_dist[class_id] / len(y_val)) * 100 if class_id in val_dist else 0
-            test_pct = (test_dist[class_id] / len(y_test)) * 100 if class_id in test_dist else 0
-            logger.info(msg=f"Class {class_id}: Train {train_pct:.1f}%, Val {val_pct:.1f}%, Test {test_pct:.1f}%")
         
         # Create DataLoaders
         train_loader, val_loader, test_loader = self.preprocessor.create_data_loaders(
@@ -130,7 +110,8 @@ class HeartDiseasePipeline:
         self.model = HeartDiseaseNet(
             input_dim=input_dim,
             hidden_dims=self.config['hidden_dims'],
-            dropout_rate=self.config['dropout_rate']
+            dropout_rate=self.config['dropout_rate'],
+            num_classes=1
         )
         
         logger.info(msg=f"Model architecture:\n{self.model}")
@@ -261,10 +242,10 @@ def get_default_config() -> Dict[str, Any]:
     """
     return {
         'batch_size': 64,               
-        'learning_rate': 0.005,          
+        'learning_rate': 0.001,          
         'epochs': 300,                    
-        'hidden_dims': [128, 64, 32],      
-        'dropout_rate': 0.3,             
+        'hidden_dims': [64, 32, 16],      
+        'dropout_rate': 0.5,             
         'weight_decay': 1e-3,               
         'test_size': 0.15,                 
         'val_size': 0.15,                   
