@@ -1,40 +1,58 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from logger import logger
+from src.logger import logger
 
 class HeartDiseaseNet(nn.Module):
-    def __init__(self, input_dim, hidden_dims=[128, 64, 32], dropout_rate=0.2):
+    """
+    Class for a neural network model to predict heart disease.
+    This model consists of multiple fully connected layers with batch normalization,
+    ReLU activation, and dropout for regularization.  
+    """
+    def __init__(self, input_dim, hidden_dims=[256, 128, 64], dropout_rate=0.5, num_classes=5):
         super(HeartDiseaseNet, self).__init__()
 
         layers = []
-        prev_dim = input_dim
-
-        for hidden_dim in hidden_dims:
-            layers.extend([
-                nn.Linear(prev_dim, hidden_dim),
-                nn.BatchNorm1d(hidden_dim),
-                nn.ReLU(),
-                nn.Dropout(dropout_rate)
-            ])
-            prev_dim = hidden_dim
-        
-        layers.append(nn.Linear(prev_dim, 1))
-
-        self.network = nn.Sequential(*layers)
+        in_dim = input_dim
+        for i, h_dim in enumerate(hidden_dims):
+            layers.append(nn.Linear(in_dim, h_dim))
+            layers.append(nn.BatchNorm1d(h_dim))
+            layers.append(nn.ReLU())
+            if i < len(hidden_dims) - 1:
+                layers.append(nn.Dropout(dropout_rate))
+            else:
+                layers.append(nn.Dropout(dropout_rate * 0.5))
+            in_dim = h_dim
+        self.feature_extractor = nn.Sequential(*layers)
+        self.out = nn.Linear(in_dim, num_classes)
 
         self._initialize_weights()
-    
+
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform_(m.weight)
-                nn.init.constant_(m.bias, 0)
-    
+                nn.init.kaiming_uniform_(m.weight, nonlinearity='relu')
+                nn.init.zeros_(m.bias)
+
     def forward(self, x):
-        return torch.sigmoid(self.network(x))
+        x = self.feature_extractor(x)
+        x = self.out(x)
+        return x
 
 class EarlyStopping:
+    """
+    Early stopping to halt training when validation loss does not improve.
+    
+    Args:
+        patience (int): Number of epochs with no improvement after which training will be stopped.
+        min_delta (float): Minimum change in the monitored quantity to qualify as an improvement.
+        restore_best_weights (bool): Whether to restore model weights from the epoch with the best validation loss.
+        model (nn.Module): The model to be monitored.
+        val_loss (float): The validation loss to monitor.
+        counter (int): Counter for epochs without improvement.
+        best_loss (float): Best validation loss observed.
+        best_weights (dict): Weights of the model at the epoch with the best validation loss.   
+    """
     def __init__(self, patience=10, min_delta=0.001, restore_best_weights=True):
         self.patience = patience
         self.min_delta = min_delta
@@ -52,7 +70,7 @@ class EarlyStopping:
             self.counter = 0
             self.save_checkpoint(model)
         else:
-            counter += 1
+            self.counter += 1
         
         if self.counter >= self.patience:
             if self.restore_best_weights:
@@ -62,4 +80,4 @@ class EarlyStopping:
         return False
 
     def save_checkpoint(self, model: nn.Module):
-        self.best_weights = model.state_dict().copy
+        self.best_weights = model.state_dict().copy()

@@ -8,6 +8,8 @@ log_filepath = os.path.join(log_dir, 'logs.log')
 os.makedirs(log_dir, exist_ok=True)
 
 logging.basicConfig(
+    encoding='utf-8',
+    datefmt='%Y-%m-%d %H:%M:%S',
     level=logging.INFO,
     format=logging_str,
     handlers=[
