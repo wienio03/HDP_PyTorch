@@ -147,7 +147,7 @@ class Trainer:
 
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6)
 
-        early_stopping = EarlyStopping(patience=15, min_delta=0.001, restore_best_weights=True)  
+        early_stopping = EarlyStopping(patience=5, min_delta=0.001, restore_best_weights=True)  
 
         logger.info(msg=f'Starting multi-class training for {epochs} epochs...')
 

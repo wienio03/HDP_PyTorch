@@ -240,11 +240,11 @@ def get_default_config() -> Dict[str, Any]:
     """
     return {
         'batch_size': 64,               
-        'learning_rate': 0.001,          
+        'learning_rate': 0.01,          
         'epochs': 300,                    
-        'hidden_dims': [128, 64, 32],      
-        'dropout_rate': 0.3,             
+        'hidden_dims': [64, 32, 16],      
+        'dropout_rate': 0.45,             
         'weight_decay': 1e-3,               
-        'test_size': 0.15,                 
+        'test_size': 0.5,                 
         'val_size': 0.15,                   
     }

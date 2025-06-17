@@ -18,10 +18,7 @@ class HeartDiseaseNet(nn.Module):
             layers.append(nn.Linear(in_dim, h_dim))
             layers.append(nn.BatchNorm1d(h_dim))
             layers.append(nn.ReLU())
-            if i < len(hidden_dims) - 1:
-                layers.append(nn.Dropout(dropout_rate))
-            else:
-                layers.append(nn.Dropout(dropout_rate * 0.5))
+            layers.append(nn.Dropout(dropout_rate))
             in_dim = h_dim
         self.feature_extractor = nn.Sequential(*layers)
         self.out = nn.Linear(in_dim, num_classes)
