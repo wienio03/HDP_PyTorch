@@ -31,13 +31,12 @@ class Evaluator:
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
 
-                # For multi-class: use softmax to get probabilities and argmax for predictions
-                probabilities = torch.softmax(output, dim=1).cpu().numpy()
-                predictions = torch.argmax(output, dim=1).cpu().numpy()
+                probabilities = torch.sigmoid(output).cpu().numpy()
+                predictions = (torch.sigmoid(output) > 0.5).float().cpu().numpy()
                 targets = target.cpu().numpy()
 
-                all_predictions.extend(predictions)
-                all_probabilities.extend(probabilities)
+                all_predictions.extend(predictions.flatten())
+                all_probabilities.extend(probabilities.flatten())
                 all_targets.extend(targets)
         
         return np.array(all_predictions), np.array(all_probabilities), np.array(all_targets)
@@ -59,7 +58,7 @@ class Evaluator:
         class_names = ['No Disease (0)', 'Disease (1)']
         
         logger.info(msg='Classification Report:')
-        logger.info(msg=classification_report(targets, predictions, target_names=class_names))
+        logger.info(msg=classification_report(targets, predictions, target_names=class_names, zero_division=0))
 
         cm = confusion_matrix(targets, predictions)
         logger.info(msg='Confusion Matrix:')

@@ -1,6 +1,12 @@
 # Klasyfikacja Choroby Serca - PyTorch
 
-Projekt implementuje sieć neuronową do binarnej klasyfikacji choroby serca wykorzystując PyTorch. System przewiduje prawdopodobieństwo występowania choroby serca na podstawie 13 parametrów medycznych pacjenta z datasetu UCI Heart Disease.
+Projekt implementuje sieć neuronową do binarnej klasyfikacji choroby serca wykorzystując PyTorch. System przew### Optymalizacja i regularyzacja
+
+- **AdamW**: Adam z dodatkową regularyzacją
+- **Early Stopping**: Patience=15 epok, monitoring validation loss
+- **Learning Rate Scheduler**: ReduceLROnPlateau (zmniejszanie przy plateau)
+- **Regularyzacja**: Dropout, Batch Norm, Weight Decay, Early Stopping
+- **Wagi klas**: BCEWithLogitsLoss z pos_weight dla niezbalansowanych danych binarnych
 
 ## Opis projektu
 
@@ -9,10 +15,10 @@ Model wykorzystuje sieć FNN z trzema ukrytymi warstwami do klasyfikacji binarne
 ### Architektura modelu
 
 - **Typ**: FNN z batch normalization, dropout, early stopping, weight decay
-- **Warstwy**: 64 → 32 → 16 → 1 neuron wyjściowy
-- **Funkcja aktywacji**: ReLU w warstwach ukrytych, Sigmoid na wyjściu
-- **Regularyzacja**: Dropout (0.5 w pierwszych warstwach, 0.25 w późniejszych), Batch Normalization, Weight Decay
-- **Funkcja straty**: Binary Cross Entropy Loss
+- **Warstwy**: 256 → 128 → 64 → 1 neuron wyjściowy
+- **Funkcja aktywacji**: ReLU w warstwach ukrytych, raw logits na wyjściu
+- **Regularyzacja**: Dropout (0.5), Batch Normalization, Weight Decay
+- **Funkcja straty**: BCEWithLogitsLoss z wagami klas dla niezbalansowanych danych
 - **Optimizer**: AdamW z learning rate scheduler
 
 ### Dataset
@@ -87,9 +93,9 @@ Program automatycznie:
 
 1. Pobierze dane z UCI repository (jeśli nie istnieją jeszcze lokalnie)
 2. Przeprowadzi preprocessing i konwersję na klasyfikację binarną
-3. Podzieli dane na train/validation/test (70/15/15)
-4. Wytrenuje model z early stopping
-5. Wygeneruje raport ewaluacji i wykresy
+3. Podzieli dane na train/validation/test (70/15/15) ze stratyfikacją
+4. Wytrenuje model z early stopping i wagami klas dla niezbalansowanych danych
+5. Wygeneruje raport ewaluacji i wykresy z poprawionymi metrykami
 6. Zapisze model w folderze `models/`
 
 ### Dostosowanie konfiguracji
@@ -102,7 +108,7 @@ def get_default_config():
         'batch_size': 64,               # Rozmiar batcha
         'learning_rate': 0.001,         # Learning rate
         'epochs': 300,                  # Maksymalna liczba epok
-        'hidden_dims': [64, 32, 16],    # Architektura warstw ukrytych
+        'hidden_dims': [256, 128, 64],  # Architektura warstw ukrytych
         'dropout_rate': 0.5,            # Współczynnik dropout
         'weight_decay': 1e-3,           # L2 regularization
         'test_size': 0.15,              # Procent danych na test
@@ -137,14 +143,15 @@ results, predictions, probabilities, targets = pipeline.evaluate_model(test_load
 - **Konwersja target**: Z wieloklasowego (0,1,2,3,4) na binarny (0=brak choroby, 1-4=choroba)
 - **Normalizacja**: StandardScaler dla wszystkich cech numerycznych
 - **Podział danych**: Stratified split zachowujący proporcje klas
+- **Obsługa niezbalansowanych danych**: Automatyczne wagi klas w BCEWithLogitsLoss
 
 ### Architektura modelu
 
 ```python
 class HeartDiseaseNet(nn.Module):
-    def __init__(self, input_dim=13, hidden_dims=[64, 32, 16], dropout_rate=0.5):
+    def __init__(self, input_dim=13, hidden_dims=[256, 128, 64], dropout_rate=0.5):
         # Warstwy: Linear -> BatchNorm -> ReLU -> Dropout
-        # Ostatnia warstwa: Linear -> Sigmoid (prawdopodobieństwo)
+        # Ostatnia warstwa: Linear (raw logits dla BCEWithLogitsLoss)
 ```
 
 ### Optymalizacja i regularyzacja

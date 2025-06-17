@@ -37,7 +37,7 @@ class HeartDiseaseNet(nn.Module):
     def forward(self, x):
         x = self.feature_extractor(x)
         x = self.out(x)
-        return torch.sigmoid(x)
+        return x
 
 class EarlyStopping:
     """

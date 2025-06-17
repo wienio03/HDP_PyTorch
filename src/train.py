@@ -74,7 +74,7 @@ class Trainer:
             optimizer.step()
 
             total_loss += loss.item()
-            predicted = (output > 0.5).float()
+            predicted = (torch.sigmoid(output) > 0.5).float()
             total += target.size(0)
             correct += (predicted == target).sum().item()
         
@@ -105,7 +105,7 @@ class Trainer:
                 loss = criterion(output, target)
 
                 total_loss += loss.item()
-                predicted = (output > 0.5).float()
+                predicted = (torch.sigmoid(output) > 0.5).float()
                 total += target.size(0)
                 correct += (predicted == target).sum().item() 
     
@@ -113,7 +113,7 @@ class Trainer:
         accuracy = 100. * correct / total
         return avg_loss, accuracy
 
-    def train(self, train_loader, val_loader, epochs=150, lr=0.001, weight_decay=1e-4):
+    def train(self, train_loader, val_loader, epochs=150, lr=0.001, weight_decay=1e-4, use_class_weights=True):
         """
         Train the model for binary classification using BCELoss.
         Args:
@@ -128,8 +128,17 @@ class Trainer:
             history (dict): Dictionary containing training and validation loss and accuracy history 
         """
         
-        criterion = nn.BCELoss()
-        logger.info("Using BCELoss for binary classification")
+        if use_class_weights:
+            all_targets = []
+            for _, target in train_loader:
+                all_targets.extend(target.cpu().numpy())
+            
+            pos_weight = torch.tensor([sum(all_targets) / (len(all_targets) - sum(all_targets))]).to(self.device)
+            criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+            logger.info(f"Using BCEWithLogitsLoss with pos_weight={pos_weight.item():.3f} for binary classification")
+        else:
+            criterion = nn.BCELoss()
+            logger.info("Using BCELoss for binary classification")
 
         optimizer = optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 

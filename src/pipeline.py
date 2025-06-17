@@ -138,6 +138,7 @@ class HeartDiseasePipeline:
             epochs=self.config['epochs'],
             lr=self.config['learning_rate'],
             weight_decay=self.config['weight_decay'],
+            use_class_weights=True,
         )
         
         return history
