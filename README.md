@@ -4,14 +4,14 @@ Projekt implementuje sieć neuronową do binarnej klasyfikacji choroby serca wyk
 
 ## Opis projektu
 
-Model wykorzystuje głęboką sieć neuronową typu feed-forward z trzema ukrytymi warstwami do klasyfikacji binarnej (choroba/brak choroby). Projekt zawiera kompletny pipeline obejmujący pobieranie danych, preprocessing, trening z regularyzacją, ewaluację i wizualizację wyników.
+Model wykorzystuje sieć FNN z trzema ukrytymi warstwami do klasyfikacji binarnej (choroba/brak choroby). Projekt zawiera kompletny pipeline obejmujący pobieranie danych, preprocessing, trening z regularyzacją, ewaluację i wizualizację wyników.
 
 ### Architektura modelu
 
-- **Typ**: Feed-forward neural network z batch normalization
+- **Typ**: FNN z batch normalization, dropout, early stopping, weight decay
 - **Warstwy**: 64 → 32 → 16 → 1 neuron wyjściowy
 - **Funkcja aktywacji**: ReLU w warstwach ukrytych, Sigmoid na wyjściu
-- **Regularyzacja**: Dropout (0.5), Batch Normalization, Weight Decay
+- **Regularyzacja**: Dropout (0.5 w pierwszych warstwach, 0.25 w późniejszych), Batch Normalization, Weight Decay
 - **Funkcja straty**: Binary Cross Entropy Loss
 - **Optimizer**: AdamW z learning rate scheduler
 
@@ -85,7 +85,7 @@ python main.py
 
 Program automatycznie:
 
-1. Pobierze dane z UCI repository (jeśli nie istnieją)
+1. Pobierze dane z UCI repository (jeśli nie istnieją jeszcze lokalnie)
 2. Przeprowadzi preprocessing i konwersję na klasyfikację binarną
 3. Podzieli dane na train/validation/test (70/15/15)
 4. Wytrenuje model z early stopping
@@ -147,21 +147,21 @@ class HeartDiseaseNet(nn.Module):
         # Ostatnia warstwa: Linear -> Sigmoid (prawdopodobieństwo)
 ```
 
-### Trening i regularyzacja
+### Optymalizacja i regularyzacja
 
+- **AdamW**: Adam z dodatkową regularyzacją
 - **Early Stopping**: Patience=15 epok, monitoring validation loss
 - **Learning Rate Scheduler**: ReduceLROnPlateau (zmniejszanie przy plateau)
-- **Gradient Clipping**: Max norm = 1.0
-- **Regularizacja**: Dropout, Batch Norm, Weight Decay
+- **Regularizacja**: Dropout, Batch Norm, Weight Decay, Early Stopping
 
 ### Ewaluacja
 
 Model generuje:
 
+- **Metryki**: Accuracy, Precision, Recall dla klasyfikacji binarnej
 - **Classification Report**: Precision, Recall, F1-Score dla każdej klasy
 - **Confusion Matrix**: Macierz pomyłek
 - **Wykresy**: Training curves, rozkład klas, confusion matrix
-- **Metryki**: Accuracy, Precision, Recall dla klasyfikacji binarnej
 
 ## Przykładowe wyniki
 
